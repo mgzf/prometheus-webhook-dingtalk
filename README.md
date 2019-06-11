@@ -34,6 +34,15 @@ Flags:
 
 ```
 
+create a file named /opt/data/atMobiles.json which like
+```
+{
+  "keyword1": "mobile1",
+  "keyword2": "mobile2",
+  "keyword3": "mobile3"
+}
+```
+
 ## Using Docker
 
 You can deploy this tool using the Docker image from following registry:
