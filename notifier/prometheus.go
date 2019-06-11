@@ -4,12 +4,30 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/timonwong/prometheus-webhook-dingtalk/models"
 	"github.com/timonwong/prometheus-webhook-dingtalk/template"
 )
+
+func LoadJsonFromFile(filename string) (map[string]string, error) {
+	var keywordLeader = map[string]string{}
+	bytes, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Println("ReadFile: ", err.Error())
+		return nil, err
+	}
+
+	if err := json.Unmarshal(bytes, &keywordLeader); err != nil {
+		fmt.Println("Unmarshal: ", err.Error())
+		return nil, err
+	}
+
+	return keywordLeader, nil
+}
 
 func BuildDingTalkNotification(promMessage *models.WebhookMessage) (*models.DingTalkNotification, error) {
 	title, err := template.ExecuteTextString(`{{ template "ding.link.title" . }}`, promMessage)
@@ -28,13 +46,32 @@ func BuildDingTalkNotification(promMessage *models.WebhookMessage) (*models.Ding
 		})
 	}
 
+	keywordLeader, err := LoadJsonFromFile("/opt/data/atMobiles.json")
+	if err != nil {
+		fmt.Println("readFile: ", err.Error())
+		return nil, err
+	}
+
+	var atMobiles []string
+	for keyword := range keywordLeader {
+		if strings.Contains(content, keyword) {
+			mobile := keywordLeader[keyword]
+			atMobiles = append(atMobiles, mobile)
+			content += " @" + mobile + " "
+		}
+	}
+
 	notification := &models.DingTalkNotification{
 		MessageType: "markdown",
 		Markdown: &models.DingTalkNotificationMarkdown{
 			Title: title,
 			Text:  content,
 		},
+		At: &models.DingTalkNotificationAt{
+			AtMobiles: atMobiles,
+		},
 	}
+
 	return notification, nil
 }
 
