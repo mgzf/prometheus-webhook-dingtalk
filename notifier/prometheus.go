@@ -13,20 +13,23 @@ import (
 	"github.com/timonwong/prometheus-webhook-dingtalk/template"
 )
 
-func LoadJsonFromFile(filename string) (map[string]string, error) {
-	var keywordLeader = map[string]string{}
+var (
+	keywordLeader = map[string]string{}
+)
+
+func LoadMobileFromFile(filename string) error {
 	bytes, err := ioutil.ReadFile(filename)
 	if err != nil {
 		fmt.Println("ReadFile: ", err.Error())
-		return nil, err
+		return err
 	}
 
 	if err := json.Unmarshal(bytes, &keywordLeader); err != nil {
 		fmt.Println("Unmarshal: ", err.Error())
-		return nil, err
+		return err
 	}
 
-	return keywordLeader, nil
+	return nil
 }
 
 func BuildDingTalkNotification(promMessage *models.WebhookMessage) (*models.DingTalkNotification, error) {
@@ -44,12 +47,6 @@ func BuildDingTalkNotification(promMessage *models.WebhookMessage) (*models.Ding
 			Title:     fmt.Sprintf("Graph for alert #%d", i+1),
 			ActionURL: alert.GeneratorURL,
 		})
-	}
-
-	keywordLeader, err := LoadJsonFromFile("/opt/data/atMobiles.json")
-	if err != nil {
-		fmt.Println("readFile: ", err.Error())
-		return nil, err
 	}
 
 	var atMobiles []string
