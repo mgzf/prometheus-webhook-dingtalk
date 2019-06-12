@@ -14,6 +14,7 @@ import (
 	"github.com/prometheus/common/promlog/flag"
 	"github.com/prometheus/common/version"
 	"github.com/timonwong/prometheus-webhook-dingtalk/chilog"
+	"github.com/timonwong/prometheus-webhook-dingtalk/notifier"
 	"github.com/timonwong/prometheus-webhook-dingtalk/template"
 	"github.com/timonwong/prometheus-webhook-dingtalk/webrouter"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -24,6 +25,7 @@ var (
 	dingTalkProfiles = DingTalkProfiles(kingpin.Flag("ding.profile", "Custom DingTalk profile (can be given multiple times, <profile>=<dingtalk-url>).").Required())
 	requestTimeout   = kingpin.Flag("ding.timeout", "Timeout for invoking DingTalk webhook.").Default("5s").Duration()
 	templateFileName = kingpin.Flag("template.file", "Customized template file (see template/default.tmpl for example)").Default("").String()
+	mobileFileName   = kingpin.Flag("mobile.file", "Customized mobile file (see notifier/mobile.json for example)").Default("").String()
 )
 
 func main() {
@@ -55,6 +57,17 @@ func main() {
 		level.Info(l).Log("msg", "Using customized template")
 	} else {
 		level.Info(logger).Log("msg", "Using default template")
+	}
+
+	// Load & validate mobile file
+	if *mobileFileName != "" {
+		l := log.With(logger, "filename", *mobileFileName)
+
+		err := notifier.LoadMobileFromFile(*mobileFileName)
+		if err != nil {
+			level.Error(l).Log("msg", "Error loading mobile file", "err", err)
+			os.Exit(1)
+		}
 	}
 
 	// Print current profile configuration
