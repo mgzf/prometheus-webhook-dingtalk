@@ -29,18 +29,10 @@ Flags:
                           Custom DingTalk profile (can be given multiple times, <profile>=<dingtalk-url>).
       --ding.timeout=5s   Timeout for invoking DingTalk webhook.
       --template.file=""  Customized template file (see template/default.tmpl for example)
+      --mobile.file=""    Customized mobile file (see notifier/mobile.json for example)
       --log.level=info    Only log messages with the given severity or above. One of: [debug, info, warn, error]
       --version           Show application version.
 
-```
-
-create a file named /opt/data/atMobiles.json which like
-```
-{
-  "keyword1": "mobile1",
-  "keyword2": "mobile2",
-  "keyword3": "mobile3"
-}
 ```
 
 ## Using Docker
